@@ -10,6 +10,7 @@ const (
 	STOP = iota
 	LOSE
 	PLAY
+	RESET
 	QUIT
 )
 

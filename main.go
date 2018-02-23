@@ -15,8 +15,8 @@ func main() {
 
 	disp := NewDisplay(ctx)
 	players := []*Player{
-		NewPlayer(LEFT, 20, disp),
-		NewPlayer(RIGHT, 20, disp),
+		NewPlayer(LEFT),
+		NewPlayer(RIGHT),
 	}
 	NewGame(
 		players[LEFT],

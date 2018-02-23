@@ -22,12 +22,9 @@ func (player *Player) Notify(kind int) {
 	}
 }
 
-func NewPlayer(side int, sec int, display *Display) *Player {
+func NewPlayer(side int) *Player {
 	var player Player
-	player.sec = sec
 	player.side = side
-	player.c = make(chan bool)
-	display.Print(player.side, player.sec)
 	return &player
 }
 
@@ -40,6 +37,7 @@ func (player *Player) Turn(display *Display, button *Button) bool {
 	display.BlinkOn(player.side)
 	defer display.BlinkOff(player.side)
 
+	player.c = make(chan bool)
 	button.Start(ctx)
 	for {
 		select {
@@ -53,4 +51,17 @@ func (player *Player) Turn(display *Display, button *Button) bool {
 			}
 		}
 	}
+}
+
+func (player *Player) Reset(sec int, display *Display) {
+	player.sec = sec
+	display.Print(player.side, player.sec)
+}
+
+func (player *Player) Win(display *Display) {
+	display.SetColor(player.side, COLOR_WIN)
+}
+
+func (player *Player) Lose(display *Display) {
+	display.SetColor(player.side, COLOR_LOSE)
 }

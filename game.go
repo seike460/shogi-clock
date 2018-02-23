@@ -22,29 +22,52 @@ func NewGame(firstPlayer *Player, secondPlayer *Player, firstButton *Button, sec
 	game.firstButton = firstButton
 	game.secondButton = secondButton
 	game.display = display
-	game.c = make(chan int)
 	return &game
 }
 
 func (game *Game) Start() {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	for {
-		NewButton(
-			[]Reserve{
-				Reserve{termbox.KeyCtrlP, PLAY, game},
-				Reserve{termbox.KeyCtrlQ, QUIT, game},
-			},
-		).Start(ctx)
-		if <-game.c == QUIT {
-			break
+		game.firstPlayer.Reset(10, game.display)
+		game.secondPlayer.Reset(10, game.display)
+		{
+			game.c = make(chan int)
+			ctx, cancel := context.WithCancel(context.Background())
+			NewButton(
+				[]Reserve{
+					Reserve{termbox.KeyCtrlP, PLAY, game},
+					Reserve{termbox.KeyCtrlQ, QUIT, game},
+				},
+			).Start(ctx)
+			kind := <-game.c
+			cancel()
+			if kind == QUIT {
+				break
+			}
 		}
 		for {
 			if game.firstPlayer.Turn(game.display, game.firstButton) {
+				game.firstPlayer.Lose(game.display)
+				game.secondPlayer.Win(game.display)
 				break
 			}
 			if game.secondPlayer.Turn(game.display, game.secondButton) {
+				game.firstPlayer.Win(game.display)
+				game.secondPlayer.Lose(game.display)
+				break
+			}
+		}
+		{
+			game.c = make(chan int)
+			ctx, cancel := context.WithCancel(context.Background())
+			NewButton(
+				[]Reserve{
+					Reserve{termbox.KeyCtrlR, PLAY, game},
+					Reserve{termbox.KeyCtrlQ, QUIT, game},
+				},
+			).Start(ctx)
+			kind := <-game.c
+			cancel()
+			if kind == QUIT {
 				break
 			}
 		}
